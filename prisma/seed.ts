@@ -39,7 +39,7 @@ type SeedStudent = {
 
 const STUDENTS: SeedStudent[] = [
   {
-    name: "Vaibhav Sharma",
+    name: "Vaibhav Rai",
     email: "vaibhav@sarasmer.dev",
     education: "Shri Ram College of Commerce",
     program: "B.Com (Hons), Final year",

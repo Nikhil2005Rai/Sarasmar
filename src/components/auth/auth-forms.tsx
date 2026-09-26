@@ -171,7 +171,7 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
         <GoogleButton role={role} enabled={googleEnabled} />
         <form onSubmit={onSubmit} className="space-y-5" noValidate>
           <Field label="Full name" htmlFor="name" error={errors.name?.message}>
-            <Input id="name" autoComplete="name" placeholder="Vaibhav Sharma" invalid={!!errors.name} {...form.register("name")} />
+            <Input id="name" autoComplete="name" placeholder="Vaibhav Rai" invalid={!!errors.name} {...form.register("name")} />
           </Field>
           <AnimatePresence initial={false}>
             {role === "COMPANY" && (

@@ -1,0 +1,128 @@
+// SARASMER — data model
+// Prisma 7 (Rust-free client) + PostgreSQL on Neon, via the node-postgres driver adapter.
+// Connection strings live in prisma.config.ts (migrations) and src/lib/db.ts (runtime).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  COMPANY
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum ApplicationStatus {
+  MATCHED
+  APPLIED
+  SHORTLISTED
+  ACCEPTED
+  DECLINED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         Role     @default(STUDENT)
+  image        String?
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  student      Student?
+  company      Company?
+}
+
+model Student {
+  id           String         @id @default(cuid())
+  userId       String         @unique
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  education    String?
+  program      String?
+  bio          String?
+  location     String?
+  skills       StudentSkill[]
+  availability Availability?
+  projects     Application[]
+}
+
+model Skill {
+  id       String         @id @default(cuid())
+  name     String         @unique
+  category String
+  students StudentSkill[]
+}
+
+model StudentSkill {
+  id         String    @id @default(cuid())
+  studentId  String
+  skillId    String
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill      Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  verified   Boolean   @default(false)
+  score      Int?
+  verifiedAt DateTime?
+
+  @@unique([studentId, skillId])
+}
+
+model Availability {
+  id        String             @id @default(cuid())
+  studentId String             @unique
+  student   Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  from      DateTime
+  to        DateTime
+  status    AvailabilityStatus @default(AVAILABLE)
+}
+
+model Company {
+  id       String    @id @default(cuid())
+  userId   String    @unique
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  industry String?
+  projects Project[]
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  companyId        String
+  company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title            String
+  description      String
+  skills           String[]
+  industry         String        @default("Finance")
+  duration         String
+  durationWeeks    Int           @default(4)
+  paid             Boolean       @default(true)
+  remote           Boolean       @default(true)
+  availabilityFrom DateTime
+  availabilityTo   DateTime
+  headcount        Int
+  budget           Int?
+  createdAt        DateTime      @default(now())
+  applications     Application[]
+
+  @@index([industry])
+}
+
+model Application {
+  id         String            @id @default(cuid())
+  studentId  String
+  projectId  String
+  student    Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  matchScore Int
+  status     ApplicationStatus @default(APPLIED)
+  createdAt  DateTime          @default(now())
+
+  @@unique([studentId, projectId])
+}
